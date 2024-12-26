@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: auth
+
+server:
+  port: 8001
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL}
+    register-with-eureka: true
+    fetch-registry: true
