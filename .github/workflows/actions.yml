@@ -1,9 +1,10 @@
-name: Deploy Auth Server
+name: Deploy Auth
 
 on:
   push:
     branches:
       - main
+      - develop
 
 jobs:
   build-and-deploy:
@@ -24,16 +25,22 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      - name: Copy about deploy files
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - name: Build Docker image & Deploy
         run: |
-          rm -rf ./scp
-          mkdir scp
-          mkdir scp/resources
-          cp $(ls ./build/libs/*.jar | grep -v "plain") ./scp
-          cp ./src/main/resources/*.yml ./scp/resources
-
-      - name: Copy to EC2
-        run: scp -i ${{ secrets.PEM_KEY }} -r ./scp ec2-user@${{ secrets.AUTH_HOST }}:/home/ec2-user/
-
-      - name: Connect and deploy
-        run: ssh auth "./deploy/deploy.sh; exit"
+          if [[ $GITHUB_REF == 'refs/heads/develop' ]]; then
+            TAG="dev"
+          elif [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            TAG="prod"
+          fi
+          echo TAG = $TAG
+          
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_AUTH }}:$TAG .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_AUTH }}:$TAG
+          kubectl rollout restart deployment/orca-auth -n $TAG
+          kubectl rollout status deployment/orca-auth -n $TAG
