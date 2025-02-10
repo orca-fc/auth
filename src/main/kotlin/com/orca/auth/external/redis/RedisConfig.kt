@@ -18,7 +18,7 @@ class RedisConfig {
     val host: String = "localhost"
 
     @Value("\${redis.port}")
-    val port: String = "6379"
+    val port: Int = 6379
 
     @Bean
     fun redisTemplate(): RedisTemplate<String, String> {
@@ -32,7 +32,7 @@ class RedisConfig {
 
     @Bean
     fun redisConnectionFactory(): LettuceConnectionFactory {
-        return LettuceConnectionFactory(host, port.toInt())
+        return LettuceConnectionFactory(host, port)
     }
 
     @Bean
