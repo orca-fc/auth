@@ -17,8 +17,6 @@ import java.time.Duration.ofDays
 class RedisConfig {
     lateinit var host: String
 
-    val port: Int = 6379
-
     @Bean
     fun redisTemplate(): RedisTemplate<String, String> {
         return RedisTemplate<String, String>()
@@ -31,7 +29,7 @@ class RedisConfig {
 
     @Bean
     fun redisConnectionFactory(): LettuceConnectionFactory {
-        return LettuceConnectionFactory(host, port)
+        return LettuceConnectionFactory(host, 6379)
     }
 
     @Bean
