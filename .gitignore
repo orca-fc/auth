@@ -29,6 +29,7 @@ bin
 # Exclude environment files for security reasons
 *.env
 .env.*
+src/main/resources/application-local.yml
 
 # macOS specific
 *.DS_Store
