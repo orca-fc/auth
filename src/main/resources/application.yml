@@ -1,13 +1,14 @@
 spring:
   application:
     name: auth
+  webflux:
+    base-path: /auth
 
 server:
-  port: 8001
+  port: 8010
 
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_URL}
-    register-with-eureka: true
-    fetch-registry: true
+redis:
+  host: redis
+
+token:
+  jwt-secret: ${JWT_SECRET}
