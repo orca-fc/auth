@@ -1,20 +1,17 @@
 package com.orca.auth.token.service
 
+import com.orca.auth.exception.AuthError
 import com.orca.auth.exception.BaseException
 import com.orca.auth.external.redis.RedisService
 import com.orca.auth.token.util.JwtManager
 import com.orca.auth.token.util.TokenType
-import io.jsonwebtoken.JwtException
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.http.ResponseCookie
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ServerWebExchange
 import java.time.Duration
 
-@Transactional(readOnly = true)
 @Service
 class TokenService(
     private val jwtManager: JwtManager,
@@ -60,7 +57,7 @@ class TokenService(
         if (tokenFromRedis == originToken) {
             return generate(exchange, userId)
         } else {
-            throw BaseException(JwtException("유효하지 않은 refresh 토큰 입니다."))
+            throw BaseException(AuthError.INVALID_TOKEN)
         }
     }
 }
