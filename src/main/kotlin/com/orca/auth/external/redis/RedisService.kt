@@ -1,5 +1,6 @@
 package com.orca.auth.external.redis
 
+import com.orca.auth.exception.AuthError
 import com.orca.auth.exception.BaseException
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
@@ -10,7 +11,7 @@ class RedisService(
     private val redisTemplate: RedisTemplate<String, String>
 ) {
     suspend fun get(key: String): String? {
-        return redisTemplate.opsForValue().get(key) ?: throw BaseException(RedisError.NOT_FOUND)
+        return redisTemplate.opsForValue().get(key) ?: throw BaseException(AuthError.KEY_NOT_FOUND)
     }
 
     suspend fun set(key: String, value: String) {

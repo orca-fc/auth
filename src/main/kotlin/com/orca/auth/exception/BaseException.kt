@@ -1,20 +1,19 @@
 package com.orca.auth.exception
 
-import com.orca.auth.external.redis.RedisError
 import com.orca.auth.util.getCurrentTimestamp
-import io.jsonwebtoken.JwtException
 import org.springframework.http.HttpStatus
 
-class BaseException(val httpStatus: HttpStatus, message: String, timeStamp: String): RuntimeException() {
-    constructor(e: RedisError): this(
-        httpStatus = e.status,
-        message = e.message,
-        timeStamp = getCurrentTimestamp()
-    )
+class BaseException(
+    val httpStatus: HttpStatus,
+    val code: String,
+    override val message: String,
+) : RuntimeException() {
 
-    constructor(e: JwtException): this(
-        httpStatus = HttpStatus.UNAUTHORIZED,
-        message = e.message!!,
-        timeStamp = getCurrentTimestamp()
+    val timeStamp = getCurrentTimestamp()
+
+    constructor(e: AuthError) : this(
+        httpStatus = e.status!!,
+        code = e.name,
+        message = e.message,
     )
 }
