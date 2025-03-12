@@ -35,10 +35,12 @@ dependencies {
 
 	runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.104.Final:osx-aarch_64")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("io.projectreactor:reactor-test")
-	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation("io.projectreactor:reactor-test:3.7.3")
+	testImplementation("io.kotest:kotest-runner-junit5-jvm:6.0.0.M1")
+	testImplementation("io.mockk:mockk:1.13.17")
+	runtimeOnly("io.kotest:kotest-assertions-core:6.0.0.M1")
+	testImplementation("org.junit.platform:junit-platform-launcher:1.12.0-M1")
+	testImplementation("org.springframework:spring-test")
 }
 
 dependencyManagement {

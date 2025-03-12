@@ -1,6 +1,6 @@
 package com.orca.auth.token.util
 
-import com.orca.auth.exception.AuthError
+import com.orca.auth.exception.ErrorCode
 import com.orca.auth.exception.BaseException
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
@@ -19,7 +19,7 @@ class JwtManager {
     private lateinit var secret: String
 
     private val key by lazy { Keys.hmacShaKeyFor(secret.toByteArray()) }
-    suspend fun generate(userId: String, type: TokenType): String {
+    suspend fun issue(userId: String, type: TokenType): String {
         val now = Date()
         return Jwts.builder().apply {
             subject(userId)
@@ -35,10 +35,10 @@ class JwtManager {
         } catch (e: JwtException) {
             throw BaseException(
                 when (e) {
-                    is ExpiredJwtException -> AuthError.TOKEN_EXPIRED
-                    is SignatureException -> AuthError.INVALID_TOKEN
-                    is MalformedJwtException -> AuthError.MALFORMED_TOKEN
-                    else -> AuthError.JWT_EXCEPTION
+                    is ExpiredJwtException -> ErrorCode.TOKEN_EXPIRED
+                    is SignatureException -> ErrorCode.INVALID_TOKEN
+                    is MalformedJwtException -> ErrorCode.MALFORMED_TOKEN
+                    else -> ErrorCode.JWT_EXCEPTION
                 }
             )
         }

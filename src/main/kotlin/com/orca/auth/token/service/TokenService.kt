@@ -1,12 +1,13 @@
 package com.orca.auth.token.service
 
-import com.orca.auth.exception.AuthError
+import com.orca.auth.exception.ErrorCode
 import com.orca.auth.exception.BaseException
+import com.orca.auth.external.player.PlayerService
 import com.orca.auth.external.redis.RedisService
 import com.orca.auth.token.util.JwtManager
 import com.orca.auth.token.util.TokenType
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.http.ResponseCookie
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ServerWebExchange
@@ -15,7 +16,8 @@ import java.time.Duration
 @Service
 class TokenService(
     private val jwtManager: JwtManager,
-    private val redisService: RedisService
+    private val redisService: RedisService,
+    private val playerService: PlayerService
 ) {
 
     suspend fun verify(token: String): String {
@@ -23,41 +25,59 @@ class TokenService(
     }
 
     suspend fun generate(exchange: ServerWebExchange, userId: String): String {
-        //TODO 유효한 userId인지 확인 (Member 서버) (비동기)
-        val tokenMap = TokenType.entries.associateWith { jwtManager.generate(userId, it) }
+        return coroutineScope {
+            val validatePlayer = async { playerService.findOneById(userId).awaitSingle() }
+            val tokens = async { jwtManager.issue(userId, TokenType.ACCESS) to jwtManager.issue(userId, TokenType.REFRESH) }
 
-        val accessToken = tokenMap[TokenType.ACCESS]!!
-        val refreshToken = tokenMap[TokenType.REFRESH]!!
-
-        coroutineScope {
-            launch {
-                redisService.setWithTTL(
-                    userId,
-                    refreshToken,
-                    Duration.ofMillis(TokenType.REFRESH.expiry)
-                )
+            try {
+                validatePlayer.await()
+            } catch (e: BaseException) {
+                throw BaseException(ErrorCode.REGISTRATION_FAIL)
             }
-        }
 
+            val (accessToken, refreshToken) = tokens.await()
+
+            launch { cachingToken(prefix = "refresh", key = userId, value = refreshToken) }
+            async { setTokenByCookie(exchange, refreshToken) }.await()
+
+            accessToken
+        }
+    }
+
+    suspend fun setTokenByCookie(exchange: ServerWebExchange, token: String) {
         exchange.response.addCookie(
-            ResponseCookie.from("refresh", refreshToken)
+            ResponseCookie.from("refresh", token)
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
                 .maxAge(Duration.ofDays(1))
                 .build()
         )
-
-        return accessToken
     }
 
-    suspend fun refresh(exchange: ServerWebExchange, userId: String, originToken: String): String {
-        val tokenFromRedis = redisService.get(userId)
+    suspend fun cachingToken(prefix: String, key: String, value: String) {
+        redisService.set(
+            prefix = prefix,
+            key = key,
+            value = value,
+            duration = Duration.ofMillis(TokenType.REFRESH.expiry)
+        )
+    }
 
-        if (tokenFromRedis == originToken) {
-            return generate(exchange, userId)
-        } else {
-            throw BaseException(AuthError.INVALID_TOKEN)
+    suspend fun refresh(exchange: ServerWebExchange, userId: String, clientToken: String): String {
+        return coroutineScope {
+            val tokenFromRedis = async { redisService.get(prefix = "refresh", key = userId) }.await()
+
+            if (clientToken == tokenFromRedis) {
+                val (accessToken, refreshToken) =
+                    async { jwtManager.issue(userId, TokenType.ACCESS) to jwtManager.issue(userId, TokenType.REFRESH) }.await()
+                
+                launch { cachingToken(prefix = "refresh", key = userId, value = refreshToken) }
+                async { setTokenByCookie(exchange, refreshToken) }.await()
+                accessToken
+            } else {
+                throw BaseException(ErrorCode.INVALID_TOKEN)
+            }
         }
     }
 }
