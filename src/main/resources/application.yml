@@ -3,12 +3,16 @@ spring:
     name: auth
   webflux:
     base-path: /auth
+  data:
+    redis:
+      repositories:
+        enabled: false
 
 server:
   port: 8010
 
 redis:
-  host: redis
+  host: orca-redis
 
 token:
   jwt-secret: ${JWT_SECRET}
