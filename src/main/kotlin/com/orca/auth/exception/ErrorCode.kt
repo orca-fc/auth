@@ -2,7 +2,7 @@ package com.orca.auth.exception
 
 import org.springframework.http.HttpStatus
 
-enum class AuthError(val status: HttpStatus? = HttpStatus.NOT_FOUND, val message: String) {
+enum class ErrorCode(val status: HttpStatus? = HttpStatus.NOT_FOUND, val message: String) {
     UNDEFINED_EXCEPTION(status = HttpStatus.INTERNAL_SERVER_ERROR, message = "Sorry, undefined exception"),
 
     // redis
@@ -13,4 +13,8 @@ enum class AuthError(val status: HttpStatus? = HttpStatus.NOT_FOUND, val message
     INVALID_TOKEN(status = HttpStatus.FORBIDDEN, message = "Invalid token"),
     MALFORMED_TOKEN(status = HttpStatus.BAD_REQUEST, message = "Malformed token"),
     JWT_EXCEPTION(status = HttpStatus.BAD_REQUEST, message = "JWT exception"),
+    REGISTRATION_FAIL(status = HttpStatus.BAD_REQUEST, message = "Token registration failed. Invalid player"),
+
+    // external
+    PLAYER_NOT_FOUND(status = HttpStatus.BAD_REQUEST, message = "Player not found. Invalid id")
 }

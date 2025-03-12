@@ -11,7 +11,7 @@ class BaseException(
 
     val timeStamp = getCurrentTimestamp()
 
-    constructor(e: AuthError) : this(
+    constructor(e: ErrorCode) : this(
         httpStatus = e.status!!,
         code = e.name,
         message = e.message,

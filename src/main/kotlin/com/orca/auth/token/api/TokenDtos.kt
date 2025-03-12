@@ -10,11 +10,6 @@ data class TokenGenerateResponse(
     val accessToken: String
 )
 
-data class TokenRefreshRequest(
-    val userId: String,
-    val refreshToken: String
-)
-
 data class TokenRefreshResponse(
     val userId: String,
     val accessToken: String

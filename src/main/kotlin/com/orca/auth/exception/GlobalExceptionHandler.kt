@@ -13,7 +13,7 @@ class GlobalExceptionHandler {
     fun undefinedException(e: Exception): ResponseEntity<ErrorResponse> {
         return baseResponse(
             status = HttpStatus.INTERNAL_SERVER_ERROR,
-            body = ErrorResponse(BaseException(AuthError.UNDEFINED_EXCEPTION)))
+            body = ErrorResponse(BaseException(ErrorCode.UNDEFINED_EXCEPTION)))
     }
 
     @ExceptionHandler(BaseException::class)

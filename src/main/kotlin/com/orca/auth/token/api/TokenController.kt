@@ -44,22 +44,21 @@ class TokenController(
     @Operation(summary = "토큰 재발급", description = "토큰을 재발급 한다.")
     @PostMapping("/refresh")
     suspend fun refresh(
-        @RequestBody request: TokenRefreshRequest,
+        @RequestParam userId: String,
+        @CookieValue("refresh") refreshToken: String,
         exchange: ServerWebExchange
     ): ResponseEntity<TokenRefreshResponse> {
         val newToken = tokenService.refresh(
             exchange = exchange,
-            userId = request.userId,
-            originToken = request.refreshToken
-        )
-
-        val response = TokenRefreshResponse(
-            userId = request.userId,
-            accessToken = newToken
+            userId = userId,
+            clientToken = refreshToken
         )
 
         return baseResponse(
-            body = response
+            body = TokenRefreshResponse(
+                userId = userId,
+                accessToken = newToken
+            )
         )
     }
 }
