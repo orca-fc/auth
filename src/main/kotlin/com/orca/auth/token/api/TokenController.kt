@@ -25,22 +25,6 @@ class TokenController(
         )
     }
 
-    @Operation(summary = "토큰 발급", description = "새로운 토큰을 발급한다.\n 응답에는 accessToken이 포함되어있으며, refresh 토큰은 쿠키를 통해 반환한다.")
-    @PostMapping
-    suspend fun generate(
-        @RequestParam userId: String,
-        exchange: ServerWebExchange
-    ): ResponseEntity<TokenGenerateResponse> {
-        val response = TokenGenerateResponse(
-            userId = userId,
-            accessToken = tokenService.generate(exchange, userId)
-        )
-
-        return baseResponse(
-            body = response
-        )
-    }
-
     @Operation(summary = "토큰 재발급", description = "토큰을 재발급 한다.")
     @PostMapping("/refresh")
     suspend fun refresh(

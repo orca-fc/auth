@@ -5,11 +5,6 @@ data class TokenVerifyResponse(
     val token: String
 )
 
-data class TokenGenerateResponse(
-    val userId: String,
-    val accessToken: String
-)
-
 data class TokenRefreshResponse(
     val userId: String,
     val accessToken: String
