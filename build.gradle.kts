@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
+	implementation("org.springframework.security:spring-security-crypto")
 
 	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
 
