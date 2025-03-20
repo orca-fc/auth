@@ -1,20 +1,23 @@
 package com.orca.auth.exception
 
-import org.springframework.stereotype.Component
-import org.springframework.web.server.ServerWebExchange
-import org.springframework.web.server.WebExceptionHandler
-import reactor.core.publisher.Mono
+import com.orca.auth.util.baseResponse
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RestControllerAdvice
+import java.lang.Exception
 
-@Component
-class GlobalExceptionHandler: WebExceptionHandler {
-    override fun handle(exchange: ServerWebExchange, ex: Throwable): Mono<Void> {
-        if (ex is BaseException) {
-            exchange.response.apply {
-                statusCode = ex.httpStatus
-                return writeWith(Mono.just(bufferFactory().wrap(ex.message!!.toByteArray())))
-            }
-        }
+@RestControllerAdvice
+class GlobalExceptionHandler {
+    @ExceptionHandler(Exception::class)
+    fun undefinedException(e: Exception): ResponseEntity<ErrorResponse> {
+        return baseResponse(
+            status = HttpStatus.INTERNAL_SERVER_ERROR,
+            body = ErrorResponse(BaseException(ErrorCode.UNDEFINED_EXCEPTION)))
+    }
 
-        return Mono.error(ex)
+    @ExceptionHandler(BaseException::class)
+    fun handleBaseException(e: BaseException): ResponseEntity<ErrorResponse> {
+        return baseResponse(e.httpStatus, ErrorResponse(e))
     }
 }

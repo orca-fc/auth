@@ -21,6 +21,7 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
+	implementation("org.springframework.security:spring-security-crypto")
 
 	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
 
@@ -35,10 +36,12 @@ dependencies {
 
 	runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.104.Final:osx-aarch_64")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("io.projectreactor:reactor-test")
-	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation("io.projectreactor:reactor-test:3.7.3")
+	testImplementation("io.kotest:kotest-runner-junit5-jvm:5.9.1")
+	testImplementation("io.mockk:mockk:1.13.17")
+	testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+	testImplementation("org.junit.platform:junit-platform-launcher:1.11.4")
+	testImplementation("org.springframework:spring-test:6.2.1")
 }
 
 dependencyManagement {

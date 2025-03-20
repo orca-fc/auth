@@ -1,27 +1,28 @@
 package com.orca.auth.external.redis
 
 import com.orca.auth.exception.BaseException
-import org.springframework.data.redis.core.RedisTemplate
+import com.orca.auth.exception.ErrorCode
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
 
 @Service
 class RedisService(
-    private val redisTemplate: RedisTemplate<String, String>
+    private val redisTemplate: ReactiveRedisTemplate<String, String>
 ) {
-    suspend fun get(key: String): String? {
-        return redisTemplate.opsForValue().get(key) ?: throw BaseException(RedisError.NOT_FOUND)
+    val serviceName: String = "auth"
+    suspend fun get(prefix: String, key: String): String? {
+        return redisTemplate.opsForValue().get("${serviceName}:${prefix}:${key}").awaitSingleOrNull()
+            ?: throw BaseException(ErrorCode.KEY_NOT_FOUND)
     }
 
-    suspend fun set(key: String, value: String) {
-        redisTemplate.opsForValue().set(key, value)
+    suspend fun set(prefix: String, key: String, value: String, duration: Duration = Duration.ofDays(1)) {
+        redisTemplate.opsForValue().set("${serviceName}:${prefix}:${key}", value, duration).awaitSingle()
     }
 
-    suspend fun setWithTTL(key: String, value: String, duration: Duration) {
-        redisTemplate.opsForValue().set(key, value, duration)
-    }
-
-    suspend fun delete(key: String) {
-         redisTemplate.delete(key)
+    suspend fun delete(prefix: String, key: String) {
+        redisTemplate.delete("${serviceName}:${prefix}:${key}").awaitSingle()
     }
 }
