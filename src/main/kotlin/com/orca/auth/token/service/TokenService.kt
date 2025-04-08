@@ -56,15 +56,15 @@ class TokenService(
         )
     }
 
-    suspend fun refresh(exchange: ServerWebExchange, userId: String, clientToken: String): String {
+    suspend fun refresh(exchange: ServerWebExchange, loginId: String, clientToken: String): String {
         return coroutineScope {
-            val tokenFromRedis = async { redisService.get(prefix = "refresh", key = userId) }.await()
+            val tokenFromRedis = async { redisService.get(prefix = "refresh", key = loginId) }.await()
 
             if (clientToken == tokenFromRedis) {
                 val (accessToken, refreshToken) =
-                    async { jwtManager.issue(userId, TokenType.ACCESS) to jwtManager.issue(userId, TokenType.REFRESH) }.await()
+                    async { jwtManager.issue(loginId, TokenType.ACCESS) to jwtManager.issue(loginId, TokenType.REFRESH) }.await()
                 
-                launch { cachingToken(prefix = "refresh", key = userId, value = refreshToken) }
+                launch { cachingToken(prefix = "refresh", key = loginId, value = refreshToken) }
                 async { setTokenByCookie(exchange, refreshToken) }.await()
                 accessToken
             } else {
