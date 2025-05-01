@@ -22,6 +22,9 @@ external:
     player:
       host: orca-player
       port: 8020
+    club:
+      host: orca-club
+      port: 8030
     match:
       host: orca-match
-      port: 8030
+      port: 8040
